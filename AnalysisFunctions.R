@@ -262,6 +262,7 @@ PlotNetwork <- function(edges,node_attributes,type = "ForceDirected", open = "vi
   
 }
 FastWrite <- function(table,file){write.table(table,file,row.names = FALSE,quote = FALSE,sep="\t")}
+FastRead <- function(file){read.table(file,header = TRUE, sep="\t",stringsAsFactors = FALSE)}
 
 CompareModule <- function(edges,community = "fast.greedy",mode = "hclust",type="dendrogram") {
   nodes <- data.frame(V1 = unique(c(as.character(edges[,1]),as.character(edges[,2]))))
@@ -297,6 +298,7 @@ QueryGene <- function(DF,column = "Accession",colname = "Gene"){
 }
 # Example data for plot.IC50
 SRC.IC50 = data.frame(Drug = c("Dasatinib", "Bosutinib"),MAP2K1 = c(1000,19), MAP2K2 = c(1400,9.9),PTK2 = c(10000, 570))
+##### ggplot2 effector functions #####
 plot.IC50 <- function(DF,size=7,xlab="IC50",col){
   "This function plots IC50 values. Requires DF in following format:
   Drug | Protein1 | Protein2 | [...]
@@ -381,6 +383,7 @@ human_gbp   <- function(x){human_numbers(x, smbl = "£")}
 human_usd   <- function(x){human_numbers(x, smbl = "$")}
 human_euro  <- function(x){human_numbers(x, smbl = "€")} 
 human_num <- function(x){human_numbers(x, smbl = "")}
+##### Base Plotting #####
 log10.axis <- function(side, at, ...) {
   at.minor <- log10(outer(1:9, 10^(min(at):max(at))))
   lab <- sapply(at, function(i) as.expression(bquote(10^ .(i))))
@@ -397,6 +400,7 @@ shaded.DRC.lines <- function(ResponseData,curve.col=c("#FF7878","#AEC6CF"),curve
   # Can also plot AUCs alongside of the curve
   # AUCs are returned in case the user wants to plot separately
   # Input is dataframe with columns Dose - Response - Drug
+  # Must only contain 2 drugs (single agent and combination)
   require(dplyr)
   require(shape)
   require(pracma) # calculate AUC of the curves
@@ -467,5 +471,6 @@ shaded.DRC.lines <- function(ResponseData,curve.col=c("#FF7878","#AEC6CF"),curve
     par(mfrow=c(1,1))}
   return(AUC)
 }
+
 Drug.Combination <- read.table("data.txt",sep="\t",header=TRUE)
 
