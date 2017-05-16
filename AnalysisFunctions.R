@@ -470,7 +470,7 @@ shaded.DRC.lines <- function(ResponseData,curve.col=c("#FF7878","#AEC6CF"),curve
     par(mfrow=c(1,1))}
   return(AUC)
 }
-DRC.curve <- function(data,fct=LL2.5(),vehicle = "DMSO",lines=FALSE, estimates = c(50), ylab = "Viability",
+DRC.curve <- function(data,fct=LL.3(),vehicle = "DMSO",lines=FALSE, estimates = c(50), ylab = "Viability",
                       xlab = "Conc", xlim = c(0,20), ylim = c(0,120),
                       col = c("red","blue","black","dark green","red","blue","black","dark green"),
                       pch = c(0,2,1,6,6,1,2,0),
@@ -513,5 +513,6 @@ DRC.curve <- function(data,fct=LL2.5(),vehicle = "DMSO",lines=FALSE, estimates =
                     pretty(c(10,100),n=10)),labels=FALSE)
   return(ED(curve, estimates, interval = "delta"))
 }
-Drug.Combination <- read.table("data.txt",sep="\t",header=TRUE)
+Combination.sample <- read.table("ComboExample.txt",sep="\t",header=TRUE)
+DRC.sample <- read.table("drcExample.txt",sep="\t",header=TRUE)
 example.network <- read.table("edges.txt",sep="\t",header=FALSE)
