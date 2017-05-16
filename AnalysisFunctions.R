@@ -470,5 +470,48 @@ shaded.DRC.lines <- function(ResponseData,curve.col=c("#FF7878","#AEC6CF"),curve
     par(mfrow=c(1,1))}
   return(AUC)
 }
+DRC.curve <- function(data,fct=LL2.5(),vehicle = "DMSO",lines=FALSE, estimates = c(50), ylab = "Viability",
+                      xlab = "Conc", xlim = c(0,20), ylim = c(0,120),
+                      col = c("red","blue","black","dark green","red","blue","black","dark green"),
+                      pch = c(0,2,1,6,6,1,2,0),
+                      legendPos = c(10,100)){
+  require(drc);require(multcomp);require(lmtest);require(sandwich)
+  colors=col
+  data2 <- data %>%
+    group_by(Drug, Dose) %>%
+    summarise(std = sd(Response),Response = mean(Response))
+  curve <- drm(Response ~ Dose,curveid = Drug, data = data2, fct = fct)
+  #summary(curve)
+  #coeftest(curve, vcov = sandwich)
+  #summary(glht(curve))
+  drugs = unique(data2$Drug)
+  if(lines == TRUE){
+    plot(curve, broken = FALSE, type = "obs",log="x",xlim=xlim,ylim=ylim,
+         xlab = xlab,xttrim=FALSE,conName=vehicle,
+         ylab = ylab,col=colors[1:length(drugs)],lty=rep(1,length(drugs)),
+         lwd=rep(2,length(drugs)),legendPos = legendPos,
+         pch=pch[1:length(drugs)])
+  } else {
+    plot(curve, broken = FALSE, type = "all",log="x",xlim=xlim,ylim=ylim,
+         xlab = xlab,xttrim=FALSE,conName=vehicle,
+         ylab = ylab,col=colors[1:length(drugs)],lty=rep(1,length(drugs)),
+         lwd=rep(2,length(drugs)),legendPos = legendPos,
+         pch=pch[1:length(drugs)])
+  }
+  cnt = 1
+  for(i in 1:length(drugs)){
+    temp = subset(data2, Drug == drugs[i])
+    arrows(temp$Dose, temp$Response-temp$std, temp$Dose, temp$Response+temp$std, length=0.05, angle=90, code=3,col=colors[i],lwd=2)
+    if(lines==TRUE){
+      lines(temp$Dose,temp$Response,col=colors[i],lwd=2)
+    }}
+  axis(side=1, at=c(pretty(c(0,0.001),n=10), # need to automate this with a function
+                    pretty(c(0.001,0.01),n=10),
+                    pretty(c(0.01,0.1),n=10),
+                    pretty(c(0.1,1),n=10),
+                    pretty(c(0.1,10),n=10),
+                    pretty(c(10,100),n=10)),labels=FALSE)
+  return(ED(curve, estimates, interval = "delta"))
+}
 Drug.Combination <- read.table("data.txt",sep="\t",header=TRUE)
 example.network <- read.table("edges.txt",sep="\t",header=FALSE)
