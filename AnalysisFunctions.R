@@ -1,6 +1,6 @@
-library(clusterProfiler); library(org.Hs.eg.db);library(mygene);library(ggplot2)
+detach("package:plyr", unload=TRUE); library(clusterProfiler); library(org.Hs.eg.db);library(mygene);library(ggplot2)
 library(STRINGdb);library(igraph);library(dplyr); library(heatmap3);library(ggbiplot)
-library(ggrepel)
+library(ggrepel); library(drc)
 
 QueryKEGG <- function(genes,pvalue = 0.05,padjust = "bonferroni",keyType =  'uniprot'){
   "This function takes in a vector of gene names, converts them to Entrez gene symbols and queries KEGG"
@@ -485,6 +485,11 @@ DRC.curve <- function(data,fct=LL.3(),vehicle = "DMSO",lines=FALSE, estimates = 
   #coeftest(curve, vcov = sandwich)
   #summary(glht(curve))
   drugs = unique(data2$Drug)
+  pl <- plot(curve, broken = FALSE, type = "obs",log="x",xlim=xlim,ylim=ylim,
+             xlab = xlab,xttrim=FALSE,conName=vehicle,
+             ylab = ylab,col=colors[1:length(drugs)],lty=rep(1,length(drugs)),
+             lwd=rep(2,length(drugs)),legendPos = legendPos,
+             pch=pch[1:length(drugs)])
   if(lines == TRUE){
     plot(curve, broken = FALSE, type = "obs",log="x",xlim=xlim,ylim=ylim,
          xlab = xlab,xttrim=FALSE,conName=vehicle,
@@ -511,7 +516,31 @@ DRC.curve <- function(data,fct=LL.3(),vehicle = "DMSO",lines=FALSE, estimates = 
                     pretty(c(0.1,1),n=10),
                     pretty(c(0.1,10),n=10),
                     pretty(c(10,100),n=10)),labels=FALSE)
-  return(ED(curve, estimates, interval = "delta"))
+  ED(curve, estimates, interval = "delta")
+  invisible(pl)
+}
+ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response"){
+  data2 <- data %>%
+    group_by(Drug, Dose) %>%
+    summarise(std = sd(Response),Response = mean(Response))
+  curve <- drm(Response ~ Dose,curveid = Drug, data = data2, fct = fct)
+  invisible(pl <- DRC.curve(data,fct=fct))
+  drugs <- c()
+  response <- c()
+  for(i in 1:length(unique(data2$Drug))){
+    drugs <- c(drugs,rep(unique(as.character(data2$Drug))[i], times=length(pl$Dose)))
+    response <- c(response,pl[,i+1])
+  }
+  pl <- data.frame(Dose = rep(pl$Dose,times=length(unique(data2$Drug))), Drug = drugs, Response = response)
+  data2 <- data.frame(data2)
+  
+  p <- ggplot(data=data2, aes(x=Dose,y=Response))+ geom_hline(yintercept = 0,lty=2) + geom_point(data=data2, aes(x=Dose,y=Response,color=Drug,shape=Drug),size=size) + 
+    geom_errorbar(data=data2,aes(x=Dose,ymin=Response-std,ymax=Response+std,color=Drug),width=.1,lwd=1) + xlab(xlab) + ylab(ylab) + 
+    theme_matplotlib() + log10_x_sci() + geom_line(data=pl,aes(x=Dose,y=Response,color=Drug)) + annotation_logticks(base=10,sides="b")
+  if(!is.null(col)){
+    p <- p + scale_color_manual(values = col)
+  }
+  p
 }
 Combination.sample <- read.table("ComboExample.txt",sep="\t",header=TRUE)
 DRC.sample <- read.table("drcExample.txt",sep="\t",header=TRUE)
