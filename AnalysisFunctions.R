@@ -519,12 +519,13 @@ DRC.curve <- function(data,fct=LL.3(),vehicle = "DMSO",lines=FALSE, estimates = 
   ED(curve, estimates, interval = "delta")
   invisible(pl)
 }
-ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response"){
+ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",estimates = c(50)){
   data2 <- data %>%
     group_by(Drug, Dose) %>%
     summarise(std = sd(Response),Response = mean(Response))
   curve <- drm(Response ~ Dose,curveid = Drug, data = data2, fct = fct)
-  invisible(pl <- DRC.curve(data,fct=fct))
+  pl <- DRC.curve(data,fct=fct,estimates=estimates)
+  dev.off()
   drugs <- c()
   response <- c()
   for(i in 1:length(unique(data2$Drug))){
@@ -533,7 +534,6 @@ ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response"){
   }
   pl <- data.frame(Dose = rep(pl$Dose,times=length(unique(data2$Drug))), Drug = drugs, Response = response)
   data2 <- data.frame(data2)
-  
   p <- ggplot(data=data2, aes(x=Dose,y=Response))+ geom_hline(yintercept = 0,lty=2) + geom_point(data=data2, aes(x=Dose,y=Response,color=Drug,shape=Drug),size=size) + 
     geom_errorbar(data=data2,aes(x=Dose,ymin=Response-std,ymax=Response+std,color=Drug),width=.1,lwd=1) + xlab(xlab) + ylab(ylab) + 
     theme_matplotlib() + log10_x_sci() + geom_line(data=pl,aes(x=Dose,y=Response,color=Drug)) + annotation_logticks(base=10,sides="b")
