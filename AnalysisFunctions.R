@@ -278,7 +278,6 @@ CompareModule <- function(edges,community = "fast.greedy",mode = "hclust",type="
   if(type=="dendrogram"){plot_dendrogram(comm)}
   if(type=="graph"){modularity(comm);membership(comm);plot(comm,graph)}
 }
-
 Function2Network <- function(pathway_DF,data,KEGG_IDs,score_threshold = 800,header=TRUE){
   master_list <- c()
   for(i in 1:length(KEGG_IDs)){master_list <- c(master_list, subset(pathway_DF,ID==KEGG_IDs[i])$genes)}
@@ -471,6 +470,5 @@ shaded.DRC.lines <- function(ResponseData,curve.col=c("#FF7878","#AEC6CF"),curve
     par(mfrow=c(1,1))}
   return(AUC)
 }
-
 Drug.Combination <- read.table("data.txt",sep="\t",header=TRUE)
-
+example.network <- read.table("edges.txt",sep="\t",header=FALSE)
