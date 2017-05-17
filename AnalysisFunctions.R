@@ -1,6 +1,6 @@
 detach("package:plyr", unload=TRUE); library(clusterProfiler); library(org.Hs.eg.db);library(mygene);library(ggplot2)
 library(STRINGdb);library(igraph);library(dplyr); library(heatmap3);library(ggbiplot)
-library(ggrepel); library(drc)
+library(ggrepel); library(drc); library(ggExtra)
 
 QueryKEGG <- function(genes,pvalue = 0.05,padjust = "bonferroni",keyType =  'uniprot'){
   "This function takes in a vector of gene names, converts them to Entrez gene symbols and queries KEGG"
@@ -158,6 +158,9 @@ CorrelationPlot <- function(x1, y1, xlab="", ylab="",pt_col = "black",xhist_col=
         at=(.8 * (mean(y1) - min(y1))/(max(y1) - min(y1))))
   print(summary(lm(y1~x1)))
 }
+gg.addHistogram <- function(p,hist.col="gray"){
+  ggMarginal(p, type = "histogram", xparams = list(binwidth = 1, fill = hist.col))
+}
 VolcanoPlot_andFilter <- function(x,y,xcutoffs = c(-2,2),ycutoff,cols = c("black","red"),xlab = "",ylab = "",xlim="default"){
   data <- data.frame(x=x,y=y)
   x1 <- subset(data,x >= xcutoffs[2]) ; x1 <- subset(x1, y <= ycutoff)
@@ -295,9 +298,6 @@ QueryGene <- function(DF,column = "Accession",colname = "Gene"){
   file.remove("tmpDF2.txt")
   return(output)
 }
-# Example data for plot.IC50
-SRC.IC50 = data.frame(Drug = c("Dasatinib", "Bosutinib"),MAP2K1 = c(1000,19), MAP2K2 = c(1400,9.9),PTK2 = c(10000, 570))
-##### ggplot2 effector functions #####
 plot.IC50 <- function(DF,size=7,xlab="IC50",col){
   "This function plots IC50 values. Requires DF in following format:
   Drug | Protein1 | Protein2 | [...]
@@ -371,6 +371,41 @@ human_numbers <- function(x = NULL, smbl ="", signif = 1){
   }
   
   sapply(x,humanity)
+}
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
 }
 log10_x_sci <- function(){scale_x_log10(labels = fancy_scientific)}
 log10_y_sci <- function(){scale_y_log10(labels=fancy_scientific)}
@@ -470,7 +505,7 @@ shaded.DRC.lines <- function(ResponseData,curve.col=c("#FF7878","#AEC6CF"),curve
     par(mfrow=c(1,1))}
   return(AUC)
 }
-DRC.curve <- function(data,fct=LL.3(),vehicle = "DMSO",lines=FALSE, estimates = c(50), ylab = "Viability",
+baseDRC <- function(data,fct=LL.3(),vehicle = "DMSO",lines=FALSE, estimates = c(50), ylab = "Viability",
                       xlab = "Conc", xlim = c(0,20), ylim = c(0,120),
                       col = c("red","blue","black","dark green","red","blue","black","dark green"),
                       pch = c(0,2,1,6,6,1,2,0),
@@ -524,7 +559,7 @@ ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",es
     group_by(Drug, Dose) %>%
     summarise(std = sd(Response),Response = mean(Response))
   curve <- drm(Response ~ Dose,curveid = Drug, data = data2, fct = fct)
-  pl <- DRC.curve(data,fct=fct,estimates=estimates)
+  pl <- baseDRC(data,fct=fct,estimates=estimates)
   dev.off()
   drugs <- c()
   response <- c()
@@ -542,6 +577,17 @@ ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",es
   }
   p
 }
+# Example data for shaded.DRC.lines()
 Combination.sample <- read.table("ComboExample.txt",sep="\t",header=TRUE)
+# Example data for ggDRC() and baseDRC()
 DRC.sample <- read.table("drcExample.txt",sep="\t",header=TRUE)
+# Example data for Network analysis
 example.network <- read.table("edges.txt",sep="\t",header=FALSE)
+# Example data for plot.IC50()
+SRC.IC50 = data.frame(Drug = c("Dasatinib", "Bosutinib"),MAP2K1 = c(1000,19), MAP2K2 = c(1400,9.9),PTK2 = c(10000, 570))
+
+
+
+
+
+
