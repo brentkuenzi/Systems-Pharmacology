@@ -535,7 +535,7 @@ ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",es
   pl <- data.frame(Dose = rep(pl$Dose,times=length(unique(data2$Drug))), Drug = drugs, Response = response)
   data2 <- data.frame(data2)
   p <- ggplot(data=data2, aes(x=Dose,y=Response))+ geom_hline(yintercept = 0,lty=2) + geom_point(data=data2, aes(x=Dose,y=Response,color=Drug,shape=Drug),size=size) + 
-    geom_errorbar(data=data2,aes(x=Dose,ymin=Response-std,ymax=Response+std,color=Drug),width=.1,lwd=1) + xlab(xlab) + ylab(ylab) + 
+    geom_errorbar(data=data2,aes(x=Dose,ymin=Response-std,ymax=Response+std,color=Drug),width=.1) + xlab(xlab) + ylab(ylab) + 
     theme_matplotlib() + log10_x_sci() + geom_line(data=pl,aes(x=Dose,y=Response,color=Drug)) + annotation_logticks(base=10,sides="b")
   if(!is.null(col)){
     p <- p + scale_color_manual(values = col)
