@@ -1,6 +1,5 @@
 detach("package:plyr", unload=TRUE); library(clusterProfiler); library(org.Hs.eg.db);library(mygene);library(ggplot2)
-library(STRINGdb);library(igraph);library(dplyr); library(heatmap3);library(ggbiplot)
-library(ggrepel); library(drc); library(ggExtra)
+library(STRINGdb);library(igraph);library(dplyr); library(heatmap3); library(ggrepel); library(drc); library(ggExtra)
 
 QueryKEGG <- function(genes,pvalue = 0.05,padjust = "bonferroni",keyType =  'uniprot'){
   "This function takes in a vector of gene names, converts them to Entrez gene symbols and queries KEGG"
@@ -554,7 +553,7 @@ baseDRC <- function(data,fct=LL.3(),vehicle = "DMSO",lines=FALSE, estimates = c(
   ED(curve, estimates, interval = "delta")
   invisible(pl)
 }
-ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",estimates = c(50)){
+ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",estimates = c(50),lines = FALSE,xlim = c(0,10),ylim=c(0,120)){
   data2 <- data %>%
     group_by(Drug, Dose) %>%
     summarise(std = sd(Response),Response = mean(Response))
@@ -569,9 +568,16 @@ ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",es
   }
   pl <- data.frame(Dose = rep(pl$Dose,times=length(unique(data2$Drug))), Drug = drugs, Response = response)
   data2 <- data.frame(data2)
+  if(lines == FALSE){
   p <- ggplot(data=data2, aes(x=Dose,y=Response))+ geom_hline(yintercept = 0,lty=2) + geom_point(data=data2, aes(x=Dose,y=Response,color=Drug,shape=Drug),size=size) + 
     geom_errorbar(data=data2,aes(x=Dose,ymin=Response-std,ymax=Response+std,color=Drug),width=.1) + xlab(xlab) + ylab(ylab) + 
     theme_matplotlib() + log10_x_sci() + geom_line(data=pl,aes(x=Dose,y=Response,color=Drug)) + annotation_logticks(base=10,sides="b")
+  } else {
+    p <- ggplot(data=data2, aes(x=Dose,y=Response))+ geom_hline(yintercept = 0,lty=2) + geom_point(data=data2, aes(x=Dose,y=Response,color=Drug,shape=Drug),size=size) + 
+      geom_errorbar(data=data2,aes(x=Dose,ymin=Response-std,ymax=Response+std,color=Drug),width=.05) + xlab(xlab) + ylab(ylab) + 
+      theme_matplotlib() + log10_x_sci() + geom_line(data=data2,aes(x=Dose,y=Response,color=Drug)) + annotation_logticks(base=10,sides="b")
+  }
+  p <- p + xlim(xlim[1],xlim[2]) + ylim(ylim[1],ylim[2])
   if(!is.null(col)){
     p <- p + scale_color_manual(values = col)
   }
