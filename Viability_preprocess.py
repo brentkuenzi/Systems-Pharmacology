@@ -48,9 +48,9 @@ def normalizeViability(table, row=False,col=False): # normalize counts to vehicl
 				temp.append(str(100*(float(j)/vehicle)))
 			output.append(temp)
 		return output
-def normalizeViabilityLowest(table,dose,by_drug = None,desc=False):
+def normalizeViabilityLowest(table,dose,by_drug = "None",desc=False):
 	normalizer = 1
-	if by_drug != None:
+	if by_drug != "None":
 		for i in dose[1:]:
 			if by_drug == i[4]:
 				temp = []
@@ -72,7 +72,7 @@ def normalizeViabilityLowest(table,dose,by_drug = None,desc=False):
 			temp = []
 			for j in range(positions[0],positions[1]+1):
 				temp.append(float(table[j][positions[2]]))
-			if by_drug == None:
+			if by_drug == "None":
 				normalizer = numpy.mean(temp,axis=0)
 			for j in range(positions[0],positions[1]+1):
 				for k in range(positions[2],positions[3]+1):
@@ -87,7 +87,7 @@ def normalizeViabilityLowest(table,dose,by_drug = None,desc=False):
 					table[j][k] = str(100*(float(table[j][k])/normalizer))
 
 	return table
-def doseResponse(data_file,dose_file,background_row,by_drug = None, desc=False,lowest0 = True,normalize="lowest"):
+def doseResponse(data_file,dose_file,background_row,by_drug = "None", desc=False,lowest0 = True,normalize="lowest"):
 	# data_file =  file you want to upload
 	# dose_file = user generated info file about plating
 	# background_row = row to use for background correction
