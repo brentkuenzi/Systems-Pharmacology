@@ -553,7 +553,7 @@ baseDRC <- function(data,fct=LL.3(),vehicle = "DMSO",lines=FALSE, estimates = c(
   ED(curve, estimates, interval = "delta")
   invisible(pl)
 }
-ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",estimates = c(50),lines = FALSE,xlim = c(0,10),ylim=c(0,120)){
+ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",estimates = c(50),lines = FALSE){
   data2 <- data %>%
     group_by(Drug, Dose) %>%
     summarise(std = sd(Response),Response = mean(Response))
@@ -571,13 +571,14 @@ ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",es
   if(lines == FALSE){
   p <- ggplot(data=data2, aes(x=Dose,y=Response))+ geom_hline(yintercept = 0,lty=2) + geom_point(data=data2, aes(x=Dose,y=Response,color=Drug,shape=Drug),size=size) + 
     geom_errorbar(data=data2,aes(x=Dose,ymin=Response-std,ymax=Response+std,color=Drug),width=.1) + xlab(xlab) + ylab(ylab) + 
-    theme_matplotlib() + log10_x_sci() + geom_line(data=pl,aes(x=Dose,y=Response,color=Drug)) + annotation_logticks(base=10,sides="b")
+    theme_matplotlib() + geom_line(data=pl,aes(x=Dose,y=Response,color=Drug))
   } else {
     p <- ggplot(data=data2, aes(x=Dose,y=Response))+ geom_hline(yintercept = 0,lty=2) + geom_point(data=data2, aes(x=Dose,y=Response,color=Drug,shape=Drug),size=size) + 
       geom_errorbar(data=data2,aes(x=Dose,ymin=Response-std,ymax=Response+std,color=Drug),width=.05) + xlab(xlab) + ylab(ylab) + 
-      theme_matplotlib() + log10_x_sci() + geom_line(data=data2,aes(x=Dose,y=Response,color=Drug)) + annotation_logticks(base=10,sides="b")
+      theme_matplotlib() + geom_line(data=data2,aes(x=Dose,y=Response,color=Drug))
   }
-  p <- p + xlim(xlim[1],xlim[2]) + ylim(ylim[1],ylim[2])
+  print(xlim[1])
+  p <- p + log10_x_sci() + annotation_logticks(base=10,sides="b")
   if(!is.null(col)){
     p <- p + scale_color_manual(values = col)
   }
