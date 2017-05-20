@@ -1,6 +1,6 @@
 detach("package:plyr", unload=TRUE); library(clusterProfiler); library(org.Hs.eg.db);library(mygene);library(ggplot2)
 library(STRINGdb);library(igraph);library(dplyr); library(heatmap3); library(ggrepel); library(drc); library(ggExtra)
-
+# source("~/AnalysisFunctions/AnalysisFunctions.R")
 QueryKEGG <- function(genes,pvalue = 0.05,padjust = "bonferroni",keyType =  'uniprot'){
   "This function takes in a vector of gene names, converts them to Entrez gene symbols and queries KEGG"
   "It returns a dataframe containing all the pathways, and their pvalues/FDRs."
@@ -406,12 +406,12 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
     }
   }
 }
-log10_x_sci <- function(){scale_x_log10(labels = fancy_scientific)}
-log10_y_sci <- function(){scale_y_log10(labels=fancy_scientific)}
-log10_x_human <- function(){scale_x_log10(labels = human_numbers)}
-log10_y_human <- function(){scale_y_log10(labels = human_numbers)}
-log10_x_norm <- function(){scale_x_log10(labels = not_fancy)}
-log10_y_norm <- function(){scale_y_log10(labels= not_fancy)}
+log10_x_sci <- function(limits=NULL){scale_x_log10(labels = fancy_scientific,limits=limits)}
+log10_y_sci <- function(limits=NULL){scale_y_log10(labels=fancy_scientific,limits=limits)}
+log10_x_human <- function(limits=NULL){scale_x_log10(labels = human_numbers,limits=limits)}
+log10_y_human <- function(limits=NULL){scale_y_log10(labels = human_numbers,limits=limits)}
+log10_x_norm <- function(limits=NULL){scale_x_log10(labels = not_fancy,limits=limits)}
+log10_y_norm <- function(limits=NULL){scale_y_log10(labels= not_fancy,limits=limits)}
 human_gbp   <- function(x){human_numbers(x, smbl = "£")}
 human_usd   <- function(x){human_numbers(x, smbl = "$")}
 human_euro  <- function(x){human_numbers(x, smbl = "€")} 
@@ -553,7 +553,7 @@ baseDRC <- function(data,fct=LL.3(),vehicle = "DMSO",lines=FALSE, estimates = c(
   ED(curve, estimates, interval = "delta")
   invisible(pl)
 }
-ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",estimates = c(50),lines = FALSE){
+ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",estimates = c(50),lines = FALSE,xlim=NULL,ylim=c(0,120)){
   data2 <- data %>%
     group_by(Drug, Dose) %>%
     summarise(std = sd(Response),Response = mean(Response))
@@ -577,8 +577,10 @@ ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",es
       geom_errorbar(data=data2,aes(x=Dose,ymin=Response-std,ymax=Response+std,color=Drug),width=.05) + xlab(xlab) + ylab(ylab) + 
       theme_matplotlib() + geom_line(data=data2,aes(x=Dose,y=Response,color=Drug))
   }
-  print(xlim[1])
-  p <- p + log10_x_sci() + annotation_logticks(base=10,sides="b")
+  if(xlim[1] == 0){
+    warning("Inf introduced by log10(0)... Coercing to 0.1")
+    xlim[1] <- 0.1}
+  p <- p + log10_x_sci(limits=xlim) + annotation_logticks(base=10,sides="b") + ylim(ylim[1],ylim[2])
   if(!is.null(col)){
     p <- p + scale_color_manual(values = col)
   }
