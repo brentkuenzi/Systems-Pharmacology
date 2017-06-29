@@ -1,0 +1,113 @@
+<tool id="viability_preprocess" name="Preprocess Viability Assays">
+  <description></description>
+  <command interpreter="python">Viability_preprocess.py $plate_matrix $dose_file $background $by_drug $desc $lowest0 $type_select.normalize $type_select.nm_num $DRC_file</command>
+  <inputs>
+    <param format="txt" name="plate_matrix" type="data" label="Plate Matrix File"/>
+    <param format="txt" name="dose_file" type="data" label="Dose File (Experimental Design)"/>
+    <param format="txt" name="background" type="text" label="Subtract Background from row #" value = "2"/>
+    <param format="txt" name="by_drug" type="text" label="Normalize by drug?" value = "None"/>
+    <param format="txt" name="desc" type="boolean" label="Are concentrations in descending order?" checked = "true" />
+    <param format="txt" name="lowest0" type="boolean" label="Is lowest concentration = 0?" checked = "true" />
+    <conditional name="type_select">
+    	<param format="txt" name="normalize" type="select" label="Normalization">
+        	<option value="row">Normalize by Row</option>
+        	<option value="col">Normalize by Column</option>
+        	<option value="lowest">Normalize by lowest concentration</option>
+    	</param>
+    	<when value="row">
+			<param format="txt" name="nm_num" type="text" label="Row number to normalize by"/>
+		</when>
+		<when value="col">
+			<param format="txt" name="nm_num" type="text" label="Column number to normalize by"/>
+		</when>
+		<when value="lowest">
+			<param format="txt" name="nm_num" type="text" label ="No Input Necessary" value="NaN"/>
+		</when>
+	</conditional>
+  </inputs>
+  <outputs>
+    <data format="txt" name="DRC_file" label="DRC file"/> 
+  </outputs>
+  <stdio>
+    <regex match="error"
+     source="stdout"
+           level="fatal"
+           description="Unknown error"/>
+  </stdio> 
+
+  <tests>
+    <test>
+      <param name="input" value="fa_gc_content_input.fa"/>
+      <output name="out_file1" file="fa_gc_content_output.txt"/>
+    </test>
+  </tests>
+  <help>
+APOSTL: Automated Processing of SAINT Templated Layouts
+-----------------------------------------------------------
+**Important!! Using the API:**
+
+This version of APOSTL interactive analysis utilizes the Galaxy API to run data on http://apostl.moffitt.org/.
+You need to provide API keys from both your current Galaxy distribution as well as an API
+key from http://apostl.moffitt.org/. These can generated/accessed from the header above
+User > Preferences > Manage your API Keys.
+
+For this tool to work properly, the current history on your http://apostl.moffitt.org/ 
+account should be **empty**.
+
+Output from this tool is an HTML file with a button linking to your
+analysis server. If it is rendering in plain text, contact your Galaxy administrator
+to add APOSTL Interactive Analysis API to the trusted tools in the Display Whitelist under
+Admin > Tools and Toolshed > Manage Display Whitelist
+
+**Overview**
+
+APOSTL is an interactive affinity proteomics analysis software developed
+to reformat affinity proteomics data (both spectral counting and MS1)
+for input into the SAINTexpress statistical package and to
+visualize the output(s). APOSTL was developed at H. Lee Moffitt Cancer
+Center and Research Institute and distributed under a GNU General Public
+License (GPL). APOSTL is built in Python and R and integrated with
+SAINTexpress into a cohesive affinity proteomics data analysis package
+using the Galaxy framework.
+
+**Interactive Analysis**
+
+Once SAINTexpress has been run, APOSTL is able to read the resulting
+*list.txt* file. From here APOSTL calculates normalized spectral
+abundance factor (NSAF) values for each prey based on the
+average spectra observed for each bait. Additionally, APOSTL will
+calculate the NSAF Score as described below. *Optionally*, APOSTL
+calculates the probability of a specific interaction based on prey
+prevalence in the CRAPome http://crapome.org. This tool provides several
+analysis and visualization options. These include:
+
+**1) Correlations between replicate runs**
+
+**2) Boxplots of selected proteins**
+
+**3) Bubble graphs for each bait**
+
+**4) Density plots of all baits for a number of variables**
+
+**5) Cytoscape networks of newly identified bait-prey interactions**
+
+**6) Filtered data table**
+
+**7) KEGG pathway analysis**
+
+**8) Gene ontology (GO) analysis**
+
+All graphs are highly customizable and have various download options
+
+**Contact us**
+
+APOSTL support is provided by the Haura and Rix labs:
+
+  Adam Borne: Adam.Borne@moffitt.org 
+  Brent Kuenzi: Brent.Kuenzi@moffitt.org 
+  Paul Stewart, PhD: Paul.Stewart@moffitt.org
+
+Source code is available on Github https://github.com/bornea/APOSTL
+
+  </help>
+</tool>

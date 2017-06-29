@@ -26,8 +26,8 @@ def get_info(uniprot_accession_in): #get aa lengths and gene name
 				return genename
 			elif err.code == 302:
 				sys.exit("Request timed out. Check connection and try again.")
-			else:
-				sys.exit("Uniprot had some other error")
+			#else:
+			#	sys.exit("Uniprot had some other error")
 	lines = data.readlines()
 	header = lines[0]
 	lst = header.split('|')
@@ -53,14 +53,42 @@ def get_info(uniprot_accession_in): #get aa lengths and gene name
 			genename = 'NA'
 			error.close
 			return genename
+def FilterMaxquant(pSTY_file, PEP_cutoff, MZ_error_cutoff):
+	data = readTab(pSTY_file)
+	PEP_index = data[0].index("PEP")
+	Int_index = data[0].index("Intensity")
+	MZerror_index = data[0].index("Mass error [ppm]")
+	samples = []
+	for i in data[0]:
+		if i.startswith("Intensity "):
+			if i != "Intensity":
+				samples.append(i)
+		aa_index = data[0].index("Amino acid")
+		Position_index = data[0].index("Position")
+		Protein_index = data[0].index("Protein")
+		modSeq_index = data[0].index("Phospho (STY) Probabilities")
+		filtered = [["Source","ID","Accession","PEP","Mass Error [ppm]"]]
+	for i in samples:
+		filtered[0].append(i)
+	for i in data[1:]:
+		temp = ["Label Free"]
+		#print i[PEP_index]
+		if float(i[PEP_index]) < float(PEP_cutoff):
+			if abs(float(i[MZerror_index])) < float(MZ_error_cutoff):
+				if float(i[Int_index]) != 0:
+					#GN = get_info(i[Protein_index])
+					ID = i[Protein_index] + "_" + i[modSeq_index] + "_" + i[aa_index] + i[Position_index]
+					#ID2 = GN + "_" +  i[modSeq_index] + "_" + i[aa_index] + i[Position_index]
+					temp.append(ID);temp.append(i[Protein_index])
+					temp.append(i[PEP_index]);temp.append(i[MZerror_index])
+					for j in samples:
+			   			temp.append(i[data[0].index(j)])
+					filtered.append(temp)
+	return filtered
+
 def writeTable(DF):
-	with open("tmpDF2.txt",'w') as x:
+	with open("pY_output_automated.txt",'w') as x:
 		for i in DF:
 			x.write('\t'.join(i));x.write("\n")
 
-#data = readTab(sys.argv[1])
-#ID = data[0].index(sys.argv[2])
-#data[0].append(sys.argv[3])
-#for i in data[1:]:
-#	i.append(get_info(i[ID]))
-#writeTable(data)
+writeTable(FilterMaxquant(sys.argv[1], sys.argv[2], sys.argv[3]))

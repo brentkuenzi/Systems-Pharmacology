@@ -1,4 +1,4 @@
-detach("package:plyr", unload=TRUE); library(clusterProfiler); library(org.Hs.eg.db);library(mygene);library(ggplot2)
+library("plyr");detach("package:plyr", unload=TRUE); library(clusterProfiler); library(org.Hs.eg.db);library(mygene);library(ggplot2)
 library(STRINGdb);library(igraph);library(dplyr); library(heatmap3); library(ggrepel); library(drc); library(ggExtra)
 # source("~/AnalysisFunctions/AnalysisFunctions.R")
 QueryKEGG <- function(genes,pvalue = 0.05,padjust = "bonferroni",keyType =  'uniprot'){
@@ -17,6 +17,17 @@ QueryKEGG <- function(genes,pvalue = 0.05,padjust = "bonferroni",keyType =  'uni
     for(j in 1:length(entrez[[1]])){temp2 <- c(temp2,mapping[entrez[[1]][j]])}
     temp <- c(temp,paste(temp2,collapse="/"))}
   pathways$genes <- temp
+  return(pathways)
+}
+QueryKEGG_minimal <- function(genes,pvalue = 0.05,padjust = "bonferroni",keyType =  'uniprot'){
+  "This function takes in a vector of gene names, converts them to Entrez gene symbols and queries KEGG"
+  "It returns a dataframe containing all the pathways, and their pvalues/FDRs."
+  EG_IDs <- list()
+  mapping <- list()
+  for(i in 1:length(genes)){EG_IDs[i] <- mygene::query(genes[i])$hits$entrezgene[1]}
+  for(i in 1:length(genes)){mapping[as.character(EG_IDs[[i]])] <- as.character(genes[i])}
+  pathways <- enrichKEGG(EG_IDs, pvalueCutoff = pvalue, pAdjustMethod = padjust)
+  pathways <- as.data.frame(pathways)
   return(pathways)
 }
 QueryGO <- function(genes,ont = "bp",pvalue = 0.05,padjust = "bonferroni",keyType =  'uniprot'){
@@ -577,12 +588,13 @@ ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",es
       geom_errorbar(data=data2,aes(x=Dose,ymin=Response-std,ymax=Response+std,color=Drug),width=.05) + xlab(xlab) + ylab(ylab) + 
       theme_matplotlib() + geom_line(data=data2,aes(x=Dose,y=Response,color=Drug))
   }
-  if(xlim[1] == 0){
-    warning("Inf introduced by log10(0)... Coercing to 0.1")
-    xlim[1] <- 0.1}
-  p <- p + log10_x_sci(limits=xlim) + annotation_logticks(base=10,sides="b") + ylim(ylim[1],ylim[2])
+  if(!is.null(xlim)){
+    if(xlim[1] == 0){
+      warning("Inf introduced by log10(0)... Coercing to 0.1")
+      xlim[1] <- 0.1}
+    p <- p + log10_x_sci(limits=xlim) + annotation_logticks(base=10,sides="b") + ylim(ylim[1],ylim[2])}
   if(!is.null(col)){
-    p <- p + scale_color_manual(values = col)
+      p <- p + scale_color_manual(values = col)
   }
   p
 }
@@ -594,6 +606,8 @@ DRC.sample <- read.table("drcExample.txt",sep="\t",header=TRUE)
 example.network <- read.table("edges.txt",sep="\t",header=FALSE)
 # Example data for plot.IC50()
 SRC.IC50 = data.frame(Drug = c("Dasatinib", "Bosutinib"),MAP2K1 = c(1000,19), MAP2K2 = c(1400,9.9),PTK2 = c(10000, 570))
+
+color.scheme <- list("Green"="#0BC936","Blue"="#0B71FF","Purple"="#9C14A9","Orange"="#F57E35","Yellow"="#FFF211","Gray"="#424242")
 
 
 
