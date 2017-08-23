@@ -319,22 +319,26 @@ plot.IC50 <- function(DF,size=7,xlab="IC50",col){
   if(!missing(col)){p <- p + scale_color_manual(values=col)}
   p
 }
-theme_matplotlib <- function(){theme(axis.title.y = element_text(size=rel(1.5),face="bold"),
-                                     axis.title.x = element_text(size=rel(1.5),face="bold"),
-                                     axis.text.x = element_text(size=rel(1.5),face="bold"),
-                                     axis.text.y = element_text(size=rel(1.5),face="bold"),
-                                     strip.text.x = element_text(size=rel(1.5),face="bold"),
-                                     legend.text = element_text(face="bold"),
-                                     legend.title = element_text(face="bold"),
+theme_matplotlib <- function(){theme(axis.title.y = element_text(size=rel(1.5)),
+                                     plot.margin = unit(c(1, 1, 0.5, 0.5), "lines"),
+                                     axis.title.x = element_text(size=rel(1.5)),
+                                     axis.ticks.y = element_line(size=0.5,color='black'),
+                                     axis.ticks.length = unit(-0.25, "cm"),
+                                     axis.text.x = element_text(size=rel(1.5),margin = margin(t = .5, unit = "cm"),color="black"),
+                                     axis.text.y = element_text(size=rel(1.5),margin = margin(r = .5, unit = "cm"),color="black"),
+                                     strip.text.x = element_text(size=rel(1.5)),
                                      panel.border = element_rect(colour = "black", fill=NA, size=1),
                                      panel.background = element_blank(),
                                      panel.grid.major = element_blank(), 
                                      panel.grid.minor = element_blank(),
-                                     axis.ticks.x=element_blank(),
-                                     axis.ticks.y=element_blank(),
                                      strip.background = element_blank(),
                                      legend.background = element_blank(),
                                      legend.key = element_blank())}
+add_gridlines <- function(){theme(panel.grid.major = element_line(colour = "black",linetype="dotted"),
+                                  panel.grid.minor = element_line(colour = "black",linetype="dotted"))}
+duplicate_y_axis_continuous <- function(limits=NULL){scale_y_continuous(sec.axis = dup_axis(labels=NULL,name=NULL),limits=limits)}
+duplicate_x_axis_continuous <- function(limits=NULL){scale_x_continuous(sec.axis = dup_axis(labels=NULL,name=NULL),limits=limits)}
+
 fancy_scientific <- function(l) {
   # turn in to character string in scientific notation
   l <- format(l, scientific = TRUE)
@@ -417,16 +421,12 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
     }
   }
 }
-log10_x_sci <- function(limits=NULL){scale_x_log10(labels = fancy_scientific,limits=limits)}
-log10_y_sci <- function(limits=NULL){scale_y_log10(labels=fancy_scientific,limits=limits)}
-log10_x_human <- function(limits=NULL){scale_x_log10(labels = human_numbers,limits=limits)}
-log10_y_human <- function(limits=NULL){scale_y_log10(labels = human_numbers,limits=limits)}
-log10_x_norm <- function(limits=NULL){scale_x_log10(labels = not_fancy,limits=limits)}
-log10_y_norm <- function(limits=NULL){scale_y_log10(labels= not_fancy,limits=limits)}
-human_gbp   <- function(x){human_numbers(x, smbl = "£")}
-human_usd   <- function(x){human_numbers(x, smbl = "$")}
-human_euro  <- function(x){human_numbers(x, smbl = "€")} 
-human_num <- function(x){human_numbers(x, smbl = "")}
+log10_x_norm <- function(){scale_x_log10(limits=c(0.1,10),expand=c(0,0),labels=c(0,1,10),breaks=c(0.1,1,10))}
+log10_y_norm <- function(){scale_y_log10(limits=c(0.1,10),expand=c(0,0),labels=c(0,1,10),breaks=c(0.1,1,10))}
+log10_x_norm2 <- function(){scale_x_log10(limits=c(0.0001,100),expand=c(0,0),labels=c(0,0.001,0.01,0.1,1,10,100),breaks=c(0.0001,0.001,0.01,0.1,1,10,100))}
+log10_y_norm2 <- function(){scale_y_log10(limits=c(0.0001,100),expand=c(0,0),labels=c(0,0.001,0.01,0.1,1,10,100),breaks=c(0.0001,0.001,0.01,0.1,1,10,100))}
+library(gridExtra)
+ggAddTable <- function(table,ymin=0,ymax=0,xmin=0,xmax=0){annotation_custom(tableGrob(table), ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)}
 ##### Base Plotting #####
 log10.axis <- function(side, at, ...) {
   at.minor <- log10(outer(1:9, 10^(min(at):max(at))))
@@ -599,17 +599,55 @@ ggDRC <- function(data,fct=LL.3(),col=NULL,size=3,xlab="Dose",ylab="Response",es
   p
 }
 # Example data for shaded.DRC.lines()
-Combination.sample <- read.table("ComboExample.txt",sep="\t",header=TRUE)
+Combination.sample <- read.table("/Users/brentkuenzi/AnalysisFunctions/ComboExample.txt",sep="\t",header=TRUE)
 # Example data for ggDRC() and baseDRC()
-DRC.sample <- read.table("drcExample.txt",sep="\t",header=TRUE)
+DRC.sample <- read.table("/Users/brentkuenzi/AnalysisFunctions/drcExample.txt",sep="\t",header=TRUE)
 # Example data for Network analysis
-example.network <- read.table("edges.txt",sep="\t",header=FALSE)
+example.network <- read.table("/Users/brentkuenzi/AnalysisFunctions/edges.txt",sep="\t",header=FALSE)
 # Example data for plot.IC50()
 SRC.IC50 = data.frame(Drug = c("Dasatinib", "Bosutinib"),MAP2K1 = c(1000,19), MAP2K2 = c(1400,9.9),PTK2 = c(10000, 570))
 
-color.scheme <- list("Green"="#0BC936","Blue"="#0B71FF","Purple"="#9C14A9","Orange"="#F57E35","Yellow"="#FFF211","Gray"="#424242")
-
-
+color.scheme <- list("Green"="#0BC936",
+                     "Blue"="#4E0EFF",
+                     "Purple"="#5B49A9",
+                     "Orange"="#F57E35",
+                     "Yellow"="#FFF211",
+                     "Gray"="#424242",
+                     "Red" = "#FF1E02",
+                     "lightgray" = "#d3d3d3")
+ggcolor.scheme.OG <- function(){scale_color_manual(values=c("#F57E35",
+                                                         "#5B49A9",
+                                                         "#424242",
+                                                         "#0BC936",
+                                                         "#4E0EFF",
+                                                         "#FF1E02",
+                                                         "#FFF211"))}
+ggcolor.scheme.RB <- function(){scale_color_manual(values=c("#FF1E02",
+                                                            "#4E0EFF",
+                                                            "#424242",
+                                                            "#F57E35",
+                                                            "#5B49A9",
+                                                            "#0BC936",
+                                                            "#FFF211"))}
+deltadeltaCT <- function(DF,control,untreat) {
+  # Calculates delta delta CT values for qRT-PCR experiments
+  # Must provide dataframe (as described below), a string of control gene (e.g. "GAPDH), and string of control sample (e.g. "DMSO")
+  # Format of DF should be Sample Name - Replicate # - Protein (What you are looking for) - Ct (value)
+  # Colnames are Sample - Rep - Protein - Ct
+  # Only works currently for DFs with 2 genes
+  ddCT <- c()
+  DF2 <- subset(DF,Protein != control)
+  DF3 <- subset(DF,Protein == control)
+  for(i in 1:length(DF2[,1])){
+    rep <- DF2$Rep[i]
+    ct1 <- (DF2$Ct[i]-DF3$Ct[i])
+    ct2_1 <- subset(DF2,Sample == untreat & Rep == rep)$Ct
+    ct2_2 <- subset(DF3,Sample == untreat & Rep == rep)$Ct
+    final <- ct1 - (ct2_1-ct2_2)
+    ddCT <- c(ddCT,2^(-1*final))
+  }
+  return(ddCT)
+}
 
 
 
