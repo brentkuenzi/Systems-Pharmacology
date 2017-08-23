@@ -7,5 +7,5 @@ This repository contains numerous functions used in the analysis of systems phar
 	- label free and TMT labeled
 - Signal to Noise (S2N)
 - Ranked Kolmogorov–Smirnov test
-- \\(2^(-(ΔΔCT))\\) calculations for qRT-PCR
+- 2^(-ΔΔCT) calculations for qRT-PCR
 - many more
