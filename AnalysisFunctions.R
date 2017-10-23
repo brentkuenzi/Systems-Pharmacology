@@ -1,6 +1,6 @@
 library("plyr");detach("package:plyr", unload=TRUE); library(clusterProfiler); library(org.Hs.eg.db);library(mygene);library(ggplot2)
 library(STRINGdb);library(igraph);library(dplyr); library(heatmap3); library(ggrepel); library(drc); library(ggExtra)
-# source("~/AnalysisFunctions/AnalysisFunctions.R")
+source("~/AnalysisFunctions/AnalysisFunctions.R")
 QueryKEGG <- function(genes,pvalue = 0.05,padjust = "bonferroni",keyType =  'uniprot'){
   "This function takes in a vector of gene names, converts them to Entrez gene symbols and queries KEGG"
   "It returns a dataframe containing all the pathways, and their pvalues/FDRs."
@@ -97,6 +97,15 @@ PlotOntology <- function(Ontology,pval = "p.adjust",pvalueCutoff,top10 = TRUE,co
                           legend.text = element_text(face="bold"),
                           legend.title = element_text(face="bold"))
   p
+}
+GetEntrez <- function(genes,keyType =  'uniprot'){
+  "This function takes in a vector of gene names, converts them to Entrez gene symbols and queries KEGG"
+  "It returns a dataframe containing all the pathways, and their pvalues/FDRs."
+  EG_IDs <- list()
+  mapping <- list()
+  for(i in 1:length(genes)){EG_IDs[i] <- mygene::query(genes[i])$hits$entrezgene[1]}
+  for(i in 1:length(genes)){mapping[as.character(EG_IDs[[i]])] <- as.character(genes[i])}
+  return(names(mapping))
 }
 QuerySTRING <- function(x,column,score_threshold = 800,header=TRUE){
   "This takes in a dataframe and column name (string) and queries STRING. It returns a SIF formatted dataframe."
@@ -314,12 +323,12 @@ plot.IC50 <- function(DF,size=7,xlab="IC50",col){
   ID1  |  value1  |  value2  | [...]
   "
   require(ggplot2);require(ggrepel);require(reshape2)
-  p <- ggplot(melt(DF)) + geom_point(aes(x=value,y=Drug,color=Drug),size=size) + ylab("") + 
-    log10_x_sci() + annotation_logticks(base=10,side="tb") + xlab(xlab) + geom_text_repel(aes(x=value,y=Drug,label=variable),color="black")
+  p <- ggplot(melt(DF)) + geom_point(aes(x=value,y=Drug,color=Drug),size=size) + ylab("") + log10_x_norm() + annotation_logticks(base=10,side="tb") + xlab(xlab) + geom_text_repel(aes(x=value,y=Drug,label=variable),color="black")
   if(!missing(col)){p <- p + scale_color_manual(values=col)}
   p
 }
 theme_matplotlib <- function(){theme(axis.title.y = element_text(size=rel(1.5)),
+                                     plot.title = element_text(size=rel(1.5),face="bold"),
                                      plot.margin = unit(c(1, 1, 0.5, 0.5), "lines"),
                                      axis.title.x = element_text(size=rel(1.5)),
                                      axis.ticks.y = element_line(size=0.5,color='black'),
@@ -421,6 +430,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
     }
   }
 }
+
 log10_x_norm <- function(){scale_x_log10(limits=c(0.1,10),expand=c(0,0),labels=c(0,1,10),breaks=c(0.1,1,10))}
 log10_y_norm <- function(){scale_y_log10(limits=c(0.1,10),expand=c(0,0),labels=c(0,1,10),breaks=c(0.1,1,10))}
 log10_x_norm2 <- function(){scale_x_log10(limits=c(0.0001,100),expand=c(0,0),labels=c(0,0.001,0.01,0.1,1,10,100),breaks=c(0.0001,0.001,0.01,0.1,1,10,100))}
@@ -648,7 +658,44 @@ deltadeltaCT <- function(DF,control,untreat) {
   }
   return(ddCT)
 }
-
+multiplot_labeled <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      labels <- c("a","b","c","d","e","f","g","h","i","j") # change order for number of cols
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      p <- plots[[i]]
+      p$layout$clip[p$layout$name == "panel"] <- "off"
+      p <- p + ggtitle(labels[i]) + theme(plot.title = element_text(size=rel(2),face="bold",hjust=-0.25,vjust=-1))
+      print(p, vp = viewport(layout.pos.row = matchidx$row,
+                             layout.pos.col = matchidx$col))
+    }
+  }
+}
 
 
 
