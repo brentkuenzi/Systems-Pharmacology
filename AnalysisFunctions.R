@@ -144,7 +144,7 @@ NetworkAttributes <- function(edges,centrality = "eigenvector",community="fast.g
   if(community == "multilevel"){V(graph)$comm <- membership(multilevel.community(graph))}
   
   if(centrality == "closeness"){V(graph)$closeness <- centralization.closeness(graph)$res}
-  if(centrality == "betweenness"){V(graph)$betweenness <- centralization.betweenness(graph)$res}
+  if(centrality == "betweenness"){V(graph)$betweenness <- centralization.betweenness(graph,directed=FALSE)$res}
   if(centrality == "eigenvector"){V(graph)$eigen <- centralization.evcent(graph)$vector}
   if(centrality == "PageRank"){V(graph)$page <- page_rank(graph)$vector}
   
