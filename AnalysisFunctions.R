@@ -1,4 +1,5 @@
-library("plyr");detach("package:plyr", unload=TRUE); library(clusterProfiler); library(org.Hs.eg.db);library(mygene);library(ggplot2)
+#library("plyr");detach("package:plyr", unload=TRUE)
+library(clusterProfiler); library(org.Hs.eg.db);library(mygene);library(ggplot2)
 library(STRINGdb);library(igraph);library(dplyr); library(heatmap3); library(ggrepel); library(drc); library(ggExtra)
 source("~/AnalysisFunctions/AnalysisFunctions.R")
 QueryKEGG <- function(genes,pvalue = 0.05,padjust = "bonferroni",keyType =  'uniprot'){
@@ -680,19 +681,33 @@ multiplot_labeled <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
     
   } else {
     # Set up the page
+    labels <- c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z")
+    names(plots) <- labels[1:numPlots]
     grid.newpage()
     pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
     
     # Make each plot, in the correct location
     for (i in 1:numPlots) {
       # Get the i,j matrix positions of the regions that contain this subplot
-      labels <- c("a","b","c","d","e","f","g","h","i","j") # change order for number of cols
+      labels1 <- labels[2:numPlots]
+      labels2 <- c(rep(labels[2:numPlots],times=numPlots))
+      
+      nrow = ceiling(numPlots/cols)
+      ordered_labels <- c("a")
+      pos <- c()
+      for(j in 1:numPlots-1){
+        pos <- c(pos,match(labels2[j],labels))
+      }
+      print(pos)
+      for(j in 1:length(labels1)){
+          ordered_labels <- c(ordered_labels,labels2[cols*(pos[j]+nrow-1)-1])
+        }
       matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-      p <- plots[[i]]
+      p <- plots[names(plots) == ordered_labels[i]][[1]]
       p$layout$clip[p$layout$name == "panel"] <- "off"
-      p <- p + ggtitle(labels[i]) + theme(plot.title = element_text(size=rel(2),face="bold",hjust=-0.25,vjust=-1))
-      print(p, vp = viewport(layout.pos.row = matchidx$row,
-                             layout.pos.col = matchidx$col))
+      p <- p + ggtitle(ordered_labels[i]) + theme(plot.title = element_text(size=rel(2),face="bold",hjust=-0.15,vjust=0))
+      print(p, vp = viewport(layout.pos.col = matchidx$col,
+                             layout.pos.row = matchidx$row))
     }
   }
 }

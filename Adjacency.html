@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<style>
+.background {fill: #fff;}
+line {stroke: #000;}
+text.active {fill: red;font-weight:bold;}
+</style>
+<script src="http://d3js.org/d3.v2.min.js" charset="utf-8"></script>
+<script src="https://cdn.rawgit.com/eligrey/Blob.js/0cef2746414269b16834878a8abc52eb9d53e6bd/Blob.js""></script>
+<script src="https://cdn.rawgit.com/eligrey/FileSaver.js/e9d941381475b5df8b7d7691013401e171014e89/FileSaver.min.js"></script>
+</head>
+<aside style = "margin-top: 80px">
+<p>Order: <select id="order">
+  <option value="name">Name</option>
+  <option value="EV">Eigenvector Centrality</option>
+  <option value="group">Modularity</option>
+</select>
+<button id="generate">Save as SVG</button>
+</aside>
+
+<script>
+var margin = {top: 200, right: 0, bottom: 10, left: 200},
+    width = 720,
+    height = 720;
+
+var x = d3.scale.ordinal().rangeBands([0, width]),
+    z = d3.scale.linear().domain([0, 4]).clamp(true),
+    c = d3.scale.category10().domain(d3.range(10));
+
+var svg = d3.select("body").append("svg")
+    .attr("id","adjmatrix")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    //.style("margin-left", -margin.left + "px")
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+jsondata ='{"nodes":  [{"name":"ACTN1", "EV":0.349695269169527, "group":1},{"name":"BCAR1", "EV":0.562716625550714, "group":1},{"name":"IRS2", "EV":0.542333134631041, "group":2},{"name":"RHOA", "EV":0.942885855803242, "group":1},{"name":"MTOR", "EV":0.807827044689645, "group":2},{"name":"EGFR", "EV":0.893559062380675, "group":3},{"name":"CTNND1", "EV":0.420226110237319, "group":1},{"name":"RICTOR", "EV":0.595202513800992, "group":2},{"name":"MAP2K1", "EV":0.5030867791415, "group":3},{"name":"RPS6KA1", "EV":0.549241734112245, "group":2},{"name":"AKT1", "EV":0.932556209663447, "group":2},{"name":"GSK3B", "EV":0.7107266675116, "group":2},{"name":"IRS1", "EV":0.84868010596445, "group":2},{"name":"PDPK1", "EV":0.614506566861407, "group":2},{"name":"RPS6KA3", "EV":0.59534780967592, "group":2},{"name":"MAPK3", "EV":0.754527297861333, "group":2},{"name":"MAP2K2", "EV":0.43611031012532, "group":3},{"name":"RPS6", "EV":0.570156577125051, "group":2},{"name":"PRKAA1", "EV":0.354034571127647, "group":2},{"name":"CTNNA1", "EV":0.311877004795239, "group":1},{"name":"PIK3CA", "EV":1, "group":1},{"name":"TLN1", "EV":0.413484396650162, "group":1},{"name":"CRKL", "EV":0.47411502894468, "group":1},{"name":"PAK1", "EV":0.500272175963401, "group":3},{"name":"PTK2", "EV":0.651090240725436, "group":1},{"name":"YES1", "EV":0.712783942219901, "group":3},{"name":"YBX1", "EV":0.245959988078627, "group":2},{"name":"INSR", "EV":0.668781240184132, "group":2},{"name":"MLLT4", "EV":0.151620413017375, "group":1},{"name":"MET", "EV":0.564623735617989, "group":1},{"name":"PRKAR2A", "EV":0.415307513504583, "group":2},{"name":"PTPRF", "EV":0.191293439763139, "group":2},{"name":"MAP3K7", "EV":0.117880575733305, "group":2},{"name":"WASL", "EV":0.341016826070521, "group":1},{"name":"KRAS", "EV":0.890229864351203, "group":3},{"name":"PAK4", "EV":0.41891960509718, "group":3},{"name":"CALM1", "EV":0.143291110376319, "group":3},{"name":"FER", "EV":0.181192910686078, "group":3},{"name":"PARD3", "EV":0.0988808203255732, "group":1},{"name":"ACACA", "EV":0.220961653515633, "group":2},{"name":"FLOT1", "EV":0.0387793432931293, "group":3},{"name":"PPP1R12A", "EV":0.145636922220761, "group":1},{"name":"PTPRM", "EV":0.0465893829148682, "group":3},{"name":"MAPK1", "EV":0.839437490786095, "group":2},{"name":"VCL", "EV":0.451742951051325, "group":1},{"name":"EIF4B", "EV":0.264545553700126, "group":2}], "links":  [{"source":0,"target":19,"value":1},{"source":1,"target":22,"value":1},{"source":1,"target":24,"value":1},{"source":2,"target":27,"value":1},{"source":3,"target":10,"value":1},{"source":3,"target":41,"value":1},{"source":4,"target":10,"value":1},{"source":5,"target":34,"value":1},{"source":6,"target":5,"value":1},{"source":4,"target":7,"value":1},{"source":7,"target":10,"value":1},{"source":8,"target":15,"value":1},{"source":9,"target":43,"value":1},{"source":10,"target":20,"value":1},{"source":11,"target":10,"value":1},{"source":12,"target":27,"value":1},{"source":13,"target":10,"value":1},{"source":14,"target":43,"value":1},{"source":8,"target":43,"value":1},{"source":12,"target":20,"value":1},{"source":4,"target":12,"value":1},{"source":15,"target":16,"value":1},{"source":16,"target":43,"value":1},{"source":3,"target":6,"value":1},{"source":17,"target":14,"value":1},{"source":18,"target":39,"value":1},{"source":19,"target":44,"value":1},{"source":20,"target":34,"value":1},{"source":2,"target":20,"value":1},{"source":3,"target":1,"value":1},{"source":21,"target":44,"value":1},{"source":14,"target":15,"value":1},{"source":22,"target":24,"value":1},{"source":12,"target":10,"value":1},{"source":23,"target":10,"value":1},{"source":6,"target":19,"value":1},{"source":17,"target":4,"value":1},{"source":14,"target":13,"value":1},{"source":0,"target":44,"value":1},{"source":24,"target":44,"value":1},{"source":24,"target":25,"value":1},{"source":17,"target":45,"value":1},{"source":15,"target":43,"value":1},{"source":9,"target":17,"value":1},{"source":6,"target":37,"value":1},{"source":24,"target":21,"value":1},{"source":4,"target":13,"value":1},{"source":17,"target":10,"value":1},{"source":24,"target":33,"value":1},{"source":3,"target":23,"value":1},{"source":1,"target":44,"value":1},{"source":5,"target":20,"value":1},{"source":22,"target":5,"value":1},{"source":9,"target":15,"value":1},{"source":19,"target":5,"value":1},{"source":4,"target":5,"value":1},{"source":25,"target":5,"value":1},{"source":9,"target":13,"value":1},{"source":9,"target":14,"value":1},{"source":3,"target":44,"value":1},{"source":4,"target":18,"value":1},{"source":8,"target":34,"value":1},{"source":3,"target":24,"value":1},{"source":13,"target":20,"value":1},{"source":3,"target":38,"value":1},{"source":5,"target":43,"value":1},{"source":3,"target":15,"value":1},{"source":26,"target":10,"value":1},{"source":3,"target":25,"value":1},{"source":9,"target":4,"value":1},{"source":24,"target":5,"value":1},{"source":27,"target":20,"value":1},{"source":6,"target":25,"value":1},{"source":25,"target":20,"value":1},{"source":3,"target":43,"value":1},{"source":7,"target":13,"value":1},{"source":28,"target":19,"value":1},{"source":16,"target":34,"value":1},{"source":6,"target":42,"value":1},{"source":24,"target":20,"value":1},{"source":8,"target":20,"value":1},{"source":29,"target":5,"value":1},{"source":1,"target":25,"value":1},{"source":12,"target":43,"value":1},{"source":3,"target":5,"value":1},{"source":8,"target":23,"value":1},{"source":6,"target":44,"value":1},{"source":2,"target":10,"value":1},{"source":2,"target":12,"value":1},{"source":3,"target":20,"value":1},{"source":28,"target":34,"value":1},{"source":0,"target":24,"value":1},{"source":25,"target":34,"value":1},{"source":11,"target":12,"value":1},{"source":20,"target":16,"value":1},{"source":8,"target":16,"value":1},{"source":29,"target":20,"value":1},{"source":0,"target":21,"value":1},{"source":3,"target":4,"value":1},{"source":24,"target":12,"value":1},{"source":25,"target":44,"value":1},{"source":30,"target":43,"value":1},{"source":4,"target":20,"value":1},{"source":9,"target":45,"value":1},{"source":12,"target":15,"value":1},{"source":3,"target":29,"value":1},{"source":1,"target":21,"value":1},{"source":27,"target":10,"value":1},{"source":3,"target":19,"value":1},{"source":22,"target":44,"value":1},{"source":12,"target":5,"value":1},{"source":1,"target":12,"value":1},{"source":22,"target":20,"value":1},{"source":22,"target":27,"value":1},{"source":14,"target":4,"value":1},{"source":13,"target":27,"value":1},{"source":12,"target":34,"value":1},{"source":22,"target":29,"value":1},{"source":3,"target":12,"value":1},{"source":9,"target":26,"value":1},{"source":24,"target":34,"value":1},{"source":6,"target":29,"value":1},{"source":14,"target":26,"value":1},{"source":3,"target":21,"value":1},{"source":31,"target":27,"value":1},{"source":1,"target":29,"value":1},{"source":22,"target":12,"value":1},{"source":13,"target":11,"value":1},{"source":32,"target":8,"value":1},{"source":29,"target":15,"value":1},{"source":25,"target":43,"value":1},{"source":7,"target":11,"value":1},{"source":33,"target":44,"value":1},{"source":2,"target":15,"value":1},{"source":25,"target":10,"value":1},{"source":29,"target":43,"value":1},{"source":1,"target":20,"value":1},{"source":6,"target":0,"value":1},{"source":11,"target":20,"value":1},{"source":2,"target":4,"value":1},{"source":3,"target":0,"value":1},{"source":34,"target":43,"value":1},{"source":21,"target":10,"value":1},{"source":32,"target":18,"value":1},{"source":20,"target":44,"value":1},{"source":2,"target":34,"value":1},{"source":3,"target":30,"value":1},{"source":13,"target":43,"value":1},{"source":35,"target":23,"value":1},{"source":29,"target":33,"value":1},{"source":22,"target":21,"value":1},{"source":19,"target":37,"value":1},{"source":35,"target":29,"value":1},{"source":28,"target":25,"value":1},{"source":32,"target":13,"value":1},{"source":0,"target":25,"value":1},{"source":13,"target":25,"value":1},{"source":31,"target":12,"value":1},{"source":6,"target":20,"value":1},{"source":0,"target":20,"value":1},{"source":2,"target":31,"value":1},{"source":35,"target":25,"value":1},{"source":21,"target":20,"value":1},{"source":25,"target":23,"value":1},{"source":29,"target":19,"value":1},{"source":24,"target":23,"value":1},{"source":3,"target":2,"value":1},{"source":35,"target":24,"value":1},{"source":19,"target":20,"value":1},{"source":1,"target":0,"value":1},{"source":0,"target":22,"value":1},{"source":32,"target":22,"value":1},{"source":21,"target":30,"value":1},{"source":13,"target":21,"value":1},{"source":24,"target":30,"value":1},{"source":6,"target":28,"value":1},{"source":11,"target":30,"value":1},{"source":36,"target":5,"value":1},{"source":13,"target":12,"value":1},{"source":29,"target":12,"value":1},{"source":14,"target":45,"value":1},{"source":26,"target":5,"value":1},{"source":9,"target":7,"value":1},{"source":23,"target":16,"value":1},{"source":35,"target":8,"value":1},{"source":10,"target":34,"value":1},{"source":14,"target":7,"value":1},{"source":1,"target":4,"value":1},{"source":4,"target":34,"value":1},{"source":17,"target":7,"value":1},{"source":24,"target":29,"value":1},{"source":36,"target":34,"value":1},{"source":1,"target":5,"value":1},{"source":37,"target":5,"value":1},{"source":25,"target":37,"value":1},{"source":9,"target":20,"value":1},{"source":11,"target":34,"value":1},{"source":23,"target":45,"value":1},{"source":15,"target":34,"value":1},{"source":14,"target":20,"value":1},{"source":38,"target":19,"value":1},{"source":22,"target":43,"value":1},{"source":4,"target":27,"value":1},{"source":13,"target":34,"value":1},{"source":8,"target":5,"value":1},{"source":7,"target":20,"value":1},{"source":23,"target":5,"value":1},{"source":23,"target":43,"value":1},{"source":18,"target":30,"value":1},{"source":3,"target":35,"value":1},{"source":9,"target":11,"value":1},{"source":4,"target":15,"value":1},{"source":2,"target":11,"value":1},{"source":4,"target":43,"value":1},{"source":2,"target":5,"value":1},{"source":10,"target":44,"value":1},{"source":3,"target":33,"value":1},{"source":1,"target":10,"value":1},{"source":4,"target":11,"value":1},{"source":27,"target":15,"value":1},{"source":13,"target":23,"value":1},{"source":0,"target":41,"value":1},{"source":11,"target":43,"value":1},{"source":24,"target":11,"value":1},{"source":27,"target":43,"value":1},{"source":21,"target":19,"value":1},{"source":29,"target":34,"value":1},{"source":10,"target":30,"value":1},{"source":9,"target":30,"value":1},{"source":14,"target":30,"value":1},{"source":20,"target":43,"value":1},{"source":5,"target":33,"value":1},{"source":6,"target":11,"value":1},{"source":24,"target":27,"value":1},{"source":3,"target":8,"value":1},{"source":7,"target":12,"value":1},{"source":4,"target":29,"value":1},{"source":26,"target":43,"value":1},{"source":2,"target":13,"value":1},{"source":4,"target":45,"value":1},{"source":5,"target":10,"value":1},{"source":31,"target":5,"value":1},{"source":36,"target":27,"value":1},{"source":17,"target":12,"value":1},{"source":10,"target":33,"value":1},{"source":39,"target":27,"value":1},{"source":1,"target":31,"value":1},{"source":14,"target":34,"value":1},{"source":9,"target":34,"value":1},{"source":35,"target":34,"value":1},{"source":26,"target":11,"value":1},{"source":20,"target":15,"value":1},{"source":18,"target":20,"value":1},{"source":23,"target":34,"value":1},{"source":22,"target":10,"value":1},{"source":17,"target":27,"value":1},{"source":12,"target":37,"value":1},{"source":5,"target":16,"value":1},{"source":17,"target":13,"value":1},{"source":4,"target":8,"value":1},{"source":17,"target":20,"value":1},{"source":7,"target":34,"value":1},{"source":25,"target":12,"value":1},{"source":36,"target":37,"value":1},{"source":39,"target":10,"value":1},{"source":39,"target":29,"value":1},{"source":19,"target":45,"value":1},{"source":6,"target":22,"value":1},{"source":3,"target":16,"value":1},{"source":10,"target":41,"value":1},{"source":5,"target":44,"value":1},{"source":30,"target":15,"value":1},{"source":9,"target":3,"value":1},{"source":7,"target":27,"value":1},{"source":5,"target":15,"value":1},{"source":14,"target":12,"value":1},{"source":11,"target":27,"value":1},{"source":3,"target":14,"value":1},{"source":39,"target":11,"value":1},{"source":4,"target":24,"value":1},{"source":17,"target":5,"value":1},{"source":8,"target":10,"value":1},{"source":3,"target":11,"value":1},{"source":39,"target":25,"value":1},{"source":1,"target":33,"value":1},{"source":10,"target":15,"value":1},{"source":10,"target":45,"value":1},{"source":30,"target":34,"value":1},{"source":27,"target":34,"value":1},{"source":28,"target":44,"value":1},{"source":6,"target":10,"value":1},{"source":11,"target":25,"value":1},{"source":10,"target":43,"value":1},{"source":32,"target":39,"value":1},{"source":17,"target":18,"value":1},{"source":40,"target":25,"value":1},{"source":9,"target":12,"value":1},{"source":18,"target":10,"value":1},{"source":7,"target":43,"value":1},{"source":17,"target":11,"value":1},{"source":14,"target":5,"value":1},{"source":1,"target":27,"value":1},{"source":25,"target":8,"value":1},{"source":25,"target":16,"value":1},{"source":3,"target":27,"value":1},{"source":10,"target":16,"value":1},{"source":7,"target":15,"value":1},{"source":1,"target":38,"value":1},{"source":2,"target":25,"value":1},{"source":21,"target":5,"value":1},{"source":23,"target":15,"value":1},{"source":23,"target":33,"value":1},{"source":17,"target":15,"value":1},{"source":35,"target":33,"value":1},{"source":18,"target":15,"value":1},{"source":35,"target":43,"value":1},{"source":35,"target":15,"value":1},{"source":18,"target":43,"value":1},{"source":14,"target":11,"value":1},{"source":35,"target":20,"value":1},{"source":7,"target":5,"value":1},{"source":41,"target":44,"value":1},{"source":7,"target":45,"value":1},{"source":0,"target":33,"value":1},{"source":17,"target":34,"value":1},{"source":3,"target":34,"value":1},{"source":42,"target":16,"value":1},{"source":18,"target":12,"value":1}]}';
+var data = JSON.parse(jsondata);
+
+function plot_adjacency(data) {
+  var matrix = [],
+      nodes = data.nodes,
+      n = nodes.length;
+
+  // Compute index per node.
+  nodes.forEach(function(node, i) {
+    node.index = i;
+    node.count = 0;
+    matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
+  });
+
+  // Convert edges to matrix
+  data.links.forEach(function(link) {
+    matrix[link.source][link.target].z += link.value;
+    matrix[link.target][link.source].z += link.value;
+    matrix[link.source][link.source].z += link.value; // self loop
+    matrix[link.target][link.target].z += link.value; // self loop
+
+  });
+
+  // order based on modularity, name and eigenvector centrality
+  var orders = {
+    name: d3.range(n).sort(function(a, b) { return d3.ascending(nodes[a].name, nodes[b].name); }),
+    EV: d3.range(n).sort(function(a, b) { return nodes[b].EV - nodes[a].EV; }),
+    group: d3.range(n).sort(function(a, b) { return nodes[b].group - nodes[a].group; })
+  };
+
+  // The default sort order.
+  x.domain(orders.name);
+
+  svg.append("rect")
+      .attr("class", "background")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill-opacity",0);
+
+  var row = svg.selectAll(".row")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "row")
+      .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
+      .each(row);
+
+  row.append("line")
+      .attr("x2", width)
+      .attr("stroke","black");
+
+  row.append("text")
+      .attr("x", -6)
+      .attr("y", x.rangeBand() / 2)
+      .attr("dy", ".32em")
+      .attr("text-anchor", "end")
+      .attr("font-size", 850 * (1/nodes.length))
+      .text(function(d, i) { return nodes[i].name; });
+
+  var column = svg.selectAll(".column")
+      .data(matrix)
+    .enter().append("g")
+      .attr("class", "column")
+      .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+
+  column.append("line")
+      .attr("x1", -width)
+      .attr("stroke","black");
+
+  column.append("text")
+      .attr("x", 6)
+      .attr("y", x.rangeBand() / 2)
+      .attr("dy", ".32em")
+      .attr("text-anchor", "start")
+      .style("font-style","15px")
+      .attr("font-size", 850 * (1/nodes.length))
+      .text(function(d, i) { return nodes[i].name; });
+
+  function row(row) {
+    var cell = d3.select(this).selectAll(".cell")
+        .data(row.filter(function(d) { return d.z; }))
+      .enter().append("rect")
+        .attr("class", "cell")
+        .attr("x", function(d) { return x(d.x); })
+        .attr("width", x.rangeBand())
+        .attr("height", x.rangeBand())
+        .style("fill-opacity", function(d) { return 0.4 * d.z; })
+        .style("fill", function(d) { return nodes[d.x].group == nodes[d.y].group ? c(nodes[d.x].group) : null; })
+        .on("mouseover", mouseover)
+        .on("mouseout", mouseout);
+  }
+
+  function mouseover(p) {
+    d3.selectAll(".row text").classed("active", function(d, i) { return i == p.y; });
+    d3.selectAll(".column text").classed("active", function(d, i) { return i == p.x; });
+  }
+
+  function mouseout() {
+    d3.selectAll("text").classed("active", false);
+  }
+
+  d3.select("#order").on("change", function() {
+    clearTimeout(timeout);
+    order(this.value);
+  });
+  
+
+  function order(value) {
+    x.domain(orders[value]);
+
+    var t = svg.transition().duration(2500);
+
+    t.selectAll(".row")
+        .delay(function(d, i) { return x(i) * 4; })
+        .attr("transform", function(d, i) { return "translate(0," + x(i) + ")"; })
+      .selectAll(".cell")
+        .delay(function(d) { return x(d.x) * 4; })
+        .attr("x", function(d) { return x(d.x); });
+
+    t.selectAll(".column")
+        .delay(function(d, i) { return x(i) * 4; })
+        .attr("transform", function(d, i) { return "translate(" + x(i) + ")rotate(-90)"; });
+  }
+
+  var timeout = setTimeout(function() {
+    order("group");
+    d3.select("#order").property("selectedIndex", 2).node().focus();
+  }, 5000);
+  
+  
+};
+plot_adjacency(data);
+d3.select("#generate")
+    .on("click", writeDownloadLink);
+    
+function writeDownloadLink(){ //saving entire file instead of just SVG element
+    try {
+        var isFileSaverSupported = !!new Blob();
+    } catch (e) {
+        alert("blob not supported");
+    }
+
+    var html = document.getElementById("adjmatrix").outerHTML
+
+    var blob = new Blob([html], {type: "image/svg+xml"});
+    saveAs(blob, "myProfile.svg");
+};
+</script>
+
+
+</body></html>
